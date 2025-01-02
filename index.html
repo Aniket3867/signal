@@ -6,8 +6,99 @@
   <title>Crypto Signal Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Add your existing styles here */
-    /* Ensure to keep your responsive design and dark mode functionality */
+  <style>
+    /* Global Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #2b2d42;
+      transition: background-color 0.3s ease;
+      overflow-x: hidden;
+    }
+    header {
+      background: #2b2d42;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    /* Responsive Grid Layout */
+    .signals {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .signal {
+      padding: 1rem;
+      background: #edf2f4;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    .signal h3 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .signal p {
+      margin: 0.5rem 0;
+    }
+    .signal .chart-container {
+      height: 250px;
+      width: 100%;
+    }
+    .dark-mode body {
+      background-color: #2b2d42;
+      color: white;
+    }
+    .dark-mode header {
+      background: #1e1f29;
+    }
+    .error {
+      color: red;
+      text-align: center;
+    }
+    .notification {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #4caf50;
+      color: white;
+      padding: 0.5rem;
+      border-radius: 5px;
+      display: none;
+      z-index: 100;
+    }
+    /* Filter Section */
+    .filter {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .filter input,
+    .filter select {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 200px;
+    }
+    @media (max-width: 768px) {
+      .filter input,
+      .filter select {
+        width: 100%;
+      }
+    }
+  </style>
   </style>
 </head>
 <body>
