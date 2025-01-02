@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Signal Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Add your existing styles here */
+    /* Ensure to keep your responsive design and dark mode functionality */
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Crypto Signal Dashboard</h1>
+    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  </header>
+
+  <div class="container">
+    <div class="filter">
+      <input
+        type="text"
+        id="filterInput"
+        placeholder="Filter by coin (e.g., BTC)"
+        oninput="debouncedFilter()"
+      />
+      <select id="typeFilter" onchange="debouncedFilter()">
+        <option value="">Filter by Type</option>
+        <option value="BUY">BUY</option>
+        <option value="SELL">SELL</option>
+      </select>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="notification" id="notification">New signals loaded!</div>
+
+    <h2>Current Signals</h2>
+    <div class="signals" id="signals"></div>
+  </div>
+
+  <script>
+    let darkMode = false;
+    let signalsCache = [];
+    let lastFetched = Date.now();
+    let signalsTimeout = null;
+
+    // Toggle Dark Mode
+    const toggleDarkMode = () => {
+      darkMode = !darkMode;
+      document.body.classList.toggle("dark-mode", darkMode);
+    };
+
+    // Show Notification
+    const showNotification = () => {
+      const notification = document.getElementById('notification');
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    };
+
+    // Fetch signals via WebSocket
+    const fetchSignals = async () => {
+      try {
+        const ws = new WebSocket('wss://your-backend-url/ws');
+        ws.onopen = () => console.log("WebSocket connected.");
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          signalsCache = [...signalsCache, ...data]; // Append new data to cache
+          displaySignals();
+          showNotification();
+        };
+        ws.onerror = (error) => console.error("WebSocket error:", error);
+      } catch (error) {
+        document.getElementById("error").innerText =
+          "Error: Unable to load signals. Please try again later.";
+        console.error(error);
+      }
+    };
+
+    // Display signals efficiently
+    const displaySignals = () => {
+      const signalContainer = document.getElementById("signals");
+      signalContainer.innerHTML = "";
+
+      signalsCache.forEach((signal, index) => {
+        const signalDiv = document.createElement("div");
+        signalDiv.className = "signal";
+        signalDiv.innerHTML = `
+          <h3>${signal.coin}</h3>
+          <p><strong>Type:</strong> ${signal.type}</p>
+          <p><strong>Price:</strong> ${signal.price}</p>
+          <p><strong>Time:</strong> ${new Date(signal.timestamp).toLocaleTimeString()}</p>
+          <button onclick="showSignalDetails('${signal.coin}')">View Details</button>
+          <div class="chart-container" id="chart-${signal.coin}"></div>
+        `;
+        signalContainer.appendChild(signalDiv);
+        createChart(signal.coin, signal.priceHistory);
+      });
+    };
+
+    // Create a line chart for real-time price data
+    const createChart = (coin, priceHistory) => {
+      const ctx = document.getElementById(`chart-${coin}`).getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: priceHistory.timestamps,
+          datasets: [{
+            label: `${coin} Price History`,
+            data: priceHistory.prices,
+            borderColor: '#2b2d42',
+            backgroundColor: 'rgba(43, 45, 66, 0.2)',
+            fill: true,
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              type: 'time',
+              time: { unit: 'minute' },
+              title: { display: true, text: 'Time' },
+            },
+            y: {
+              ticks: { beginAtZero: false },
+              title: { display: true, text: 'Price (USD)' },
+            },
+          },
+        },
+      });
+    };
+
+    // Call this every 5 seconds to fetch new signals
+    setInterval(fetchSignals, 5000);
+    fetchSignals();
+  </script>
+</body>
+</html>
